@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>鯉の水槽卓</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --deep:    #0a1628;
+      --water:   #1a3a5c;
+      --koi:     #e8c07d;
+      --cyan:    #7fc8d4;
+      --surface: #f0f4f8;
+      --text:    #d8e4f0;
+      --muted:   #7a9ab8;
+      --serif:   'Noto Serif JP', serif;
+      --sans:    'Noto Sans JP', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--deep);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── 水面アニメーション ── */
+    @keyframes ripple {
+      0%   { transform: scaleX(1)   translateY(0); opacity: .35; }
+      50%  { transform: scaleX(1.03) translateY(-6px); opacity: .5; }
+      100% { transform: scaleX(1)   translateY(0); opacity: .35; }
+    }
+    @keyframes koiSwim {
+      0%   { transform: translateX(-120px) rotateY(0deg) scaleX(1); opacity: 0; }
+      10%  { opacity: 1; }
+      45%  { transform: translateX(calc(100vw * .5)) rotateY(0deg) scaleX(1); }
+      55%  { transform: translateX(calc(100vw * .5 + 20px)) rotateY(180deg) scaleX(-1); }
+      90%  { opacity: 1; }
+      100% { transform: translateX(-120px) rotateY(180deg) scaleX(-1); opacity: 0; }
+    }
+    @keyframes bubbleRise {
+      0%   { transform: translateY(0) scale(1); opacity: .6; }
+      100% { transform: translateY(-200px) scale(1.4); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    /* ── ナビゲーション ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .9rem 2rem;
+      background: rgba(10, 22, 40, .85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(127, 200, 212, .15);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      color: var(--koi);
+      letter-spacing: .05em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: .85rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: .06em;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+
+    /* ── ヒーロー ── */
+    #hero {
+      position: relative;
+      height: 100vh;
+      min-height: 560px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(180deg, #071020 0%, #0d2340 40%, #1a3a5c 100%);
+    }
+
+    /* 水面レイヤー */
+    .water-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .wave {
+      position: absolute;
+      bottom: 0;
+      width: 200%;
+      left: -50%;
+      border-radius: 50% 50% 0 0 / 30px 30px 0 0;
+      background: rgba(127, 200, 212, .08);
+      animation: ripple 6s ease-in-out infinite;
+    }
+    .wave:nth-child(1) { height: 80px; animation-delay: 0s; }
+    .wave:nth-child(2) { height: 120px; animation-delay: -2s; opacity: .6; }
+    .wave:nth-child(3) { height: 160px; animation-delay: -4s; opacity: .4; }
+
+    /* 泡 */
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(127, 200, 212, .3);
+      animation: bubbleRise linear infinite;
+    }
+
+    /* 鯉シルエット */
+    .koi-fish {
+      position: absolute;
+      bottom: 30%;
+      font-size: 3rem;
+      animation: koiSwim 18s linear infinite;
+      filter: drop-shadow(0 0 12px rgba(232, 192, 125, .6));
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 1rem;
+    }
+    .hero-eyebrow {
+      font-size: .8rem;
+      letter-spacing: .2em;
+      color: var(--cyan);
+      margin-bottom: 1.2rem;
+    }
+    .hero-title {
+      font-family: var(--serif);
+      font-size: clamp(2.6rem, 8vw, 5rem);
+      font-weight: 700;
+      color: var(--koi);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 40px rgba(232, 192, 125, .35);
+    }
+    .hero-sub {
+      font-size: clamp(.95rem, 2vw, 1.15rem);
+      color: var(--muted);
+      max-width: 36ch;
+      margin: 0 auto 2.5rem;
+      line-height: 1.8;
+    }
+    .hero-badges {
+      display: flex;
+      gap: .75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: .78rem;
+      padding: .35rem .9rem;
+      border: 1px solid rgba(127, 200, 212, .4);
+      border-radius: 2rem;
+      color: var(--cyan);
+      letter-spacing: .05em;
+    }
+
+    /* ── セクション共通 ── */
+    section {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+    }
+    .section-label {
+      font-size: .75rem;
+      letter-spacing: .18em;
+      color: var(--cyan);
+      margin-bottom: 1rem;
+    }
+    h2 {
+      font-family: var(--serif);
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 700;
+      color: var(--surface);
+      margin-bottom: 2rem;
+      line-height: 1.3;
+    }
+    .divider {
+      width: 40px;
+      height: 2px;
+      background: var(--koi);
+      margin-bottom: 2.5rem;
+      border: none;
+    }
+
+    /* ── 概要 ── */
+    #about p {
+      color: var(--text);
+      margin-bottom: 1.2rem;
+      max-width: 60ch;
+    }
+
+    .tag-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 1.8rem;
+    }
+    .tag {
+      font-size: .78rem;
+      padding: .3rem .8rem;
+      background: rgba(127, 200, 212, .1);
+      border: 1px solid rgba(127, 200, 212, .25);
+      border-radius: 4px;
+      color: var(--cyan);
+    }
+
+    /* ── ニュース ── */
+    #news {
+      border-top: 1px solid rgba(127, 200, 212, .1);
+    }
+    .news-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .news-item {
+      display: grid;
+      grid-template-columns: 6.5rem 1fr;
+      gap: 1.2rem;
+      align-items: baseline;
+      padding: 1.1rem 0;
+      border-bottom: 1px solid rgba(127, 200, 212, .08);
+    }
+    .news-date {
+      font-size: .8rem;
+      color: var(--muted);
+      font-family: var(--sans);
+      white-space: nowrap;
+    }
+    .news-text {
+      font-size: .95rem;
+      color: var(--text);
+    }
+    .news-text a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    .news-text a:hover { text-decoration: underline; }
+    .news-badge {
+      display: inline-block;
+      font-size: .65rem;
+      padding: .15rem .5rem;
+      background: rgba(232, 192, 125, .15);
+      border: 1px solid rgba(232, 192, 125, .35);
+      color: var(--koi);
+      border-radius: 3px;
+      margin-right: .4rem;
+      vertical-align: .05em;
+    }
+
+    /* ── 卓主 ── */
+    #master {
+      border-top: 1px solid rgba(127, 200, 212, .1);
+    }
+    .master-card {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      background: rgba(26, 58, 92, .35);
+      border: 1px solid rgba(127, 200, 212, .15);
+      border-radius: 12px;
+      padding: 2rem;
+    }
+    .master-avatar {
+      flex-shrink: 0;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a3a5c, #0a1628);
+      border: 2px solid rgba(232, 192, 125, .5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+    }
+    .master-info h3 {
+      font-family: var(--serif);
+      font-size: 1.3rem;
+      color: var(--koi);
+      margin-bottom: .3rem;
+    }
+    .master-handle {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .master-info p {
+      font-size: .92rem;
+      color: var(--text);
+      max-width: 48ch;
+      line-height: 1.8;
+    }
+
+    /* ── ハウスルール ── */
+    #rules {
+      border-top: 1px solid rgba(127, 200, 212, .1);
+    }
+    #rules p {
+      color: var(--text);
+      margin-bottom: 2rem;
+      max-width: 56ch;
+    }
+    .btn-note {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .85rem 2rem;
+      background: var(--koi);
+      color: #0a1628;
+      font-family: var(--sans);
+      font-weight: 500;
+      font-size: .95rem;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: filter .2s, transform .15s;
+    }
+    .btn-note:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .btn-arrow { font-size: 1.1em; }
+
+    /* ── フッター ── */
+    footer {
+      text-align: center;
+      padding: 3rem 2rem 4rem;
+      border-top: 1px solid rgba(127, 200, 212, .08);
+      font-size: .8rem;
+      color: var(--muted);
+    }
+    footer strong { color: var(--koi); font-weight: 400; }
+
+    /* ── レスポンシブ ── */
+    @media (max-width: 600px) {
+      nav { padding: .75rem 1.2rem; }
+      .nav-links { gap: 1.2rem; }
+      section { padding: 4rem 1.2rem; }
+      .master-card { flex-direction: column; gap: 1.2rem; }
+      .news-item { grid-template-columns: 1fr; gap: .2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ナビゲーション -->
+  <nav>
+    <span class="nav-logo">🐟 鯉の水槽卓</span>
+    <ul class="nav-links">
+      <li><a href="#about">概要</a></li>
+      <li><a href="#news">ニュース</a></li>
+      <li><a href="#master">卓主</a></li>
+      <li><a href="#rules">ハウスルール</a></li>
+    </ul>
+  </nav>
+
+  <!-- ヒーロー -->
+  <section id="hero">
+    <div class="water-layer">
+      <div class="wave"></div>
+      <div class="wave"></div>
+      <div class="wave"></div>
+
+      <!-- 泡 -->
+      <div class="bubble" style="width:6px;height:6px;left:15%;bottom:10%;animation-duration:4.2s;animation-delay:0s;"></div>
+      <div class="bubble" style="width:4px;height:4px;left:32%;bottom:8%;animation-duration:6s;animation-delay:-1.5s;"></div>
+      <div class="bubble" style="width:8px;height:8px;left:60%;bottom:5%;animation-duration:5.3s;animation-delay:-3s;"></div>
+      <div class="bubble" style="width:5px;height:5px;left:78%;bottom:12%;animation-duration:7s;animation-delay:-0.7s;"></div>
+      <div class="bubble" style="width:3px;height:3px;left:45%;bottom:7%;animation-duration:4.8s;animation-delay:-2s;"></div>
+
+      <!-- 鯉 -->
+      <div class="koi-fish">🐠</div>
+    </div>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">TRPG Session</p>
+      <h1 class="hero-title">鯉の水槽卓</h1>
+      <p class="hero-sub">のんびり、ゆったり。<br>水槽の中を漂うように楽しむTRPGの場所。</p>
+      <div class="hero-badges">
+        <span class="badge">ゆるふわ</span>
+        <span class="badge">初心者歓迎</span>
+        <span class="badge">まったり進行</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 概要 -->
+  <section id="about">
+    <p class="section-label">ABOUT</p>
+    <h2>どんな卓？</h2>
+    <hr class="divider">
+    <p>
+      鯉の水槽卓は、<strong style="color:var(--koi)">ゆるーく、のんびり</strong>をモットーにしたTRPGセッションです。
+      勝ち負けより雰囲気、ルール厳密さよりみんなの楽しさを大切にしています。
+    </p>
+    <p>
+      ガチガチに攻略しなくていい。うっかりルールを間違えても笑って流す。
+      そんな水槽の中の鯉のように、自由にゆらゆら泳いでもらえる場所を目指しています。
+    </p>
+    <p>
+      経験者も未経験者も、一緒にまったりテーブルを囲みましょう。
+    </p>
+    <div class="tag-group">
+      <span class="tag">ゆるい雰囲気</span>
+      <span class="tag">笑い重視</span>
+      <span class="tag">リプレイより体験</span>
+      <span class="tag">初心者OK</span>
+      <span class="tag">和気あいあい</span>
+    </div>
+  </section>
+
+  <!-- ニュース -->
+  <section id="news">
+    <p class="section-label">NEWS</p>
+    <h2>お知らせ</h2>
+    <hr class="divider">
+    <ul class="news-list">
+      <li class="news-item">
+        <span class="news-date">2025.06.01</span>
+        <span class="news-text">
+          <span class="news-badge">NEW</span>
+          サイトをオープンしました。よろしくお願いします！
+        </span>
+      </li>
+      <li class="news-item">
+        <span class="news-date">2025.06.01</span>
+        <span class="news-text">ハウスルールをNoteに掲載しました。セッション参加前にご確認ください。</span>
+      </li>
+      <li class="news-item">
+        <span class="news-date">-</span>
+        <span class="news-text" style="color:var(--muted);">次回セッション情報は告知をお待ちください。</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- 卓主 -->
+  <section id="master">
+    <p class="section-label">GAME MASTER</p>
+    <h2>卓主について</h2>
+    <hr class="divider">
+    <div class="master-card">
+      <div class="master-avatar">🐟</div>
+      <div class="master-info">
+        <h3>星月りえる</h3>
+        <p class="master-handle">鯉の水槽</p>
+        <p>
+          ゆるくてまったりなTRPGが好きな卓主です。
+          参加者のみんなが笑顔で帰れるセッションを目標に、水槽の管理人として日々精進中。
+          ルールより雰囲気派。どうかよろしくお願いします。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ハウスルール -->
+  <section id="rules">
+    <p class="section-label">HOUSE RULES</p>
+    <h2>ハウスルール</h2>
+    <hr class="divider">
+    <p>
+      当卓のハウスルールはNoteにまとめています。
+      セッションに参加いただく前に、一度ご確認いただけると助かります。
+    </p>
+    <p>
+      ルールはゆるめですが、参加者全員が楽しめるよう最低限のお約束があります。
+      何かわからないことがあれば気軽に卓主まで！
+    </p>
+    <a class="btn-note" href="https://note.com/" target="_blank" rel="noopener">
+      Noteでハウスルールを読む <span class="btn-arrow">↗</span>
+    </a>
+  </section>
+
+  <!-- フッター -->
+  <footer>
+    <p>© 鯉の水槽卓 &nbsp;—&nbsp; 卓主：<strong>星月りえる（鯉の水槽）</strong></p>
+    <p style="margin-top:.5rem">Powered by GitHub Pages 🐟</p>
+  </footer>
+
+</body>
+</html>
